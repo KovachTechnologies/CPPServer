@@ -84,28 +84,6 @@ cmake .
 make
 ```
 
-# Run test cases
-
-* Registration
-```
-python3 test.py -1
-```
-
-* Login 
-```
-python3 test.py -2
-```
-
-* Login, then request data at restricted endpoint 
-```
-python3 test.py -3
-```
-
-* Try to authenticate with a bad token (should fail) 
-```
-python3 test.py -4
-```
-
 # Endpoints
 
 - `/register`
@@ -146,3 +124,27 @@ python3 test.py -4
 
 - `/user/groups`
     - GET
+
+# Test cases 
+
+* Registration
+```
+python3 test.py -1
+```
+
+* Login 
+```
+python3 test.py -2
+```
+
+* Login, then request data at restricted endpoint 
+```
+python3 test.py -3
+```
+
+* Try to authenticate with a bad token (should fail) 
+```
+python3 test.py -4
+```
+
+
