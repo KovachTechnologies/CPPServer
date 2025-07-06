@@ -1,5 +1,5 @@
 # CPPServer
-C++ Server
+C++ Server is a basic implementation of a REST server which handles json written in C++.  We use sodium for password hashing, SQLite to store the user data, JSON Web Tokens (JWTs) with a 24 hour expiry to use as access tokens to get access to restricted data.
 
 # Install Dependencies
 

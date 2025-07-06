@@ -15,7 +15,7 @@ std::string generate_jwt(const std::string& username) {
         .set_issuer("rest_server")
         .set_subject(username)
         .set_issued_at(std::chrono::system_clock::now())
-        .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(24))
+        .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(24)) // 24-hour expiry
         .sign(jwt::algorithm::hs256{"secret_key"}); // Replace "secret_key" with a secure key
     return token;
 }
