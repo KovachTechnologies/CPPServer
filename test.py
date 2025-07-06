@@ -56,6 +56,7 @@ if __name__ == "__main__" :
     parser.add_argument('-1', '--register',  action='store_true')
     parser.add_argument('-2', '--login',  action='store_true')
     parser.add_argument('-3', '--request',  action='store_true')
+    parser.add_argument('-4', '--request-fail',  action='store_true')
 
     args = parser.parse_args()
 
@@ -67,4 +68,8 @@ if __name__ == "__main__" :
 
     if args.request :
         token = login()
+        request( token )
+
+    if args.request_fail :
+        token = "bad-token" 
         request( token )

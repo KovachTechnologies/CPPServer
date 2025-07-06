@@ -3,24 +3,19 @@ C++ Server
 
 # Install Dependencies
 
-* Download sodium
-```
-https://download.libsodium.org/libsodium/releases/
-```
+* Download sodium - select "LATEST.tar.gz" [here](https://download.libsodium.org/libsodium/releases/), then unpack in the desired location
 
-* 
+* In the project root directory, Configure, make, install
 ```
 ./configure
 make && make check
 sudo make install
 ```
 
-
 * Clone jwt-cpp
 ```
 git clone git@github.com:Thalhammer/jwt-cpp.git
 ```
-
 
 * Clone SQLiteCPP
 
@@ -70,4 +65,26 @@ make install
 ```
 cmake .
 make
+```
+
+# Run test cases
+
+* Registration
+```
+python3 test.py -1
+```
+
+* Login 
+```
+python3 test.py -2
+```
+
+* Login, then request data at restricted endpoint 
+```
+python3 test.py -3
+```
+
+* Try to authenticate with a bad token (should fail) 
+```
+python3 test.py -4
 ```
