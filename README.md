@@ -14,13 +14,13 @@ sudo make install
 
 * Clone jwt-cpp
 ```
-git clone git@github.com:Thalhammer/jwt-cpp.git
+git clone https://github.com/Thalhammer/jwt-cpp.git
 ```
 
 * Clone SQLiteCPP
 
 ```
-git clone git@github.com:SRombauts/SQLiteCpp.git
+git clone https://github.com/SRombauts/SQLiteCpp.git
 ```
 
 * In the json project root directory, run
@@ -34,7 +34,7 @@ make install
 * Clone CROW library
 
 ```
-git clone git@github.com:CrowCpp/Crow.git
+git clone http://github.com/CrowCpp/Crow.git
 ```
 
 * In the json project root directory, run
@@ -48,7 +48,7 @@ make install
 * Clone JSON library
 
 ```
-git clone git@github.com:nlohmann/json.git
+git clone http://github.com/nlohmann/json.git
 ```
 
 * In the json project root directory, run
