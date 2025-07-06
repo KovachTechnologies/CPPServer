@@ -88,3 +88,44 @@ python3 test.py -3
 ```
 python3 test.py -4
 ```
+
+# Endpoints
+
+* `/register`
+ * POST
+
+* `/login`
+ * POST
+
+* `/logout`
+ * GET
+
+* `/users/me`
+ * GET
+
+* `/user`
+ * POST
+
+* `/user/{user_id}`
+ * GET
+
+* `/user/search`
+ * POST
+
+* `/user/role`
+ * POST
+
+* `/role/{name}`
+ * GET
+
+* `/user/roles`
+ * GET
+
+* `/user/group`
+ * POST
+
+* `/user/group/(name}`
+ * GET
+
+* `/user/groups`
+ * GET
