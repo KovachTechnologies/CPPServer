@@ -91,41 +91,41 @@ python3 test.py -4
 
 # Endpoints
 
-* `/register`
- * POST
+- `/register`
+    - POST
 
-* `/login`
- * POST
+- `/login`
+    - POST
 
-* `/logout`
- * GET
+- `/logout`
+    - GET
 
-* `/users/me`
- * GET
+- `/users/me`
+    - GET
 
-* `/user`
- * POST
+- `/user`
+    - POST
 
-* `/user/{user_id}`
- * GET
+- `/user/{user_id}`
+    - GET
 
-* `/user/search`
- * POST
+- `/user/search`
+    - POST
 
-* `/user/role`
- * POST
+- `/user/role`
+    - POST
 
-* `/role/{name}`
- * GET
+- `/role/{name}`
+    - GET
 
-* `/user/roles`
- * GET
+- `/user/roles`
+    - GET
 
-* `/user/group`
- * POST
+- `/user/group`
+    - POST
 
-* `/user/group/(name}`
- * GET
+- `/user/group/(name}`
+    - GET
 
-* `/user/groups`
- * GET
+- `/user/groups`
+    - GET
