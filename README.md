@@ -88,9 +88,18 @@ make
 
 - `/register`
     - POST
+        - username
+        - password
+        - email
+        - first_name
+        - last_name
+        - role
+        - group
 
 - `/login`
     - POST
+        - username
+        - password
 
 - `/logout`
     - GET
@@ -100,27 +109,49 @@ make
 
 - `/user`
     - POST
+        - username
+        - password
+        - email
+        - role
+        - group
 
 - `/user/{user_id}`
     - GET
+        - username
+    - PUT
+        - username
+    - DELETE
+        - username
 
 - `/user/search`
     - POST
+        - username
+        - group
+        - role
 
 - `/user/role`
     - POST
+        - username
+        - role
 
 - `/role/{name}`
     - GET
+        - username
 
 - `/user/roles`
     - GET
 
 - `/user/group`
     - POST
+        - groupname
 
 - `/user/group/(name}`
     - GET
+        - groupname
+    - PUT
+        - groupname
+    - DELETE
+        - groupname
 
 - `/user/groups`
     - GET
