@@ -337,19 +337,6 @@ int main() {
         return crow::response(200, response.dump());
     });
 
-    // GET endpoint: /api/user/<string>
-    CROW_ROUTE(app, "/api/user/<string>")
-    ([&app](const crow::request& req, const std::string& user_id) {
-        json response = {
-            {"status", "success"},
-            {"data", {
-                {"user_id", user_id},
-                {"message", "User details retrieved"}
-            }}
-        };
-        return crow::response(200, response.dump());
-    });
-
     // POST endpoint: /api/user (protected by JWT, ADMIN only)
     CROW_ROUTE(app, "/api/user").methods(crow::HTTPMethod::POST)
     ([&db, &app](const crow::request& req) {
@@ -435,6 +422,168 @@ int main() {
         }
     });
 
+    // NEW: GET and DELETE endpoint: /api/user/<username> (protected by JWT, DELETE requires ADMIN)
+    CROW_ROUTE(app, "/api/user/<string>")
+    .methods(crow::HTTPMethod::GET, crow::HTTPMethod::DELETE)
+    ([&db, &app](const crow::request& req, const std::string& username) {
+        try {
+            // Verify requester's identity
+            std::string requester_username = req.get_header_value("X-Username");
+            if (requester_username.empty()) {
+                json error = {{"error", "Unable to retrieve username from token"}, {"status", "error"}};
+                return crow::response(401, error.dump());
+            }
+
+            // Handle GET request
+            if (req.method == crow::HTTPMethod::GET) {
+                SQLite::Statement query(db, "SELECT username, email, first_name, last_name, role, group_name FROM users WHERE username = ?");
+                query.bind(1, username);
+                if (!query.executeStep()) {
+                    json error = {{"error", "User not found"}, {"status", "error"}};
+                    return crow::response(404, error.dump());
+                }
+
+                json response = {
+                    {"status", "success"},
+                    {"data", {
+                        {"username", query.getColumn(0).getString()},
+                        {"email", query.getColumn(1).getString()},
+                        {"first_name", query.getColumn(2).getString()},
+                        {"last_name", query.getColumn(3).getString()},
+                        {"role", query.getColumn(4).getString()},
+                        {"group", query.getColumn(5).getString()}
+                    }}
+                };
+                return crow::response(200, response.dump());
+            }
+
+            // Handle DELETE request
+            if (req.method == crow::HTTPMethod::DELETE) {
+                // Check if requester has ADMIN role
+                SQLite::Statement role_query(db, "SELECT role FROM users WHERE username = ?");
+                role_query.bind(1, requester_username);
+                if (!role_query.executeStep()) {
+                    json error = {{"error", "Requester not found"}, {"status", "error"}};
+                    return crow::response(404, error.dump());
+                }
+                std::string requester_role = role_query.getColumn(0).getString();
+                if (requester_role != "ADMIN") {
+                    json error = {{"error", "Unauthorized: ADMIN role required"}, {"status", "error"}};
+                    return crow::response(403, error.dump());
+                }
+
+                // Check if target user exists
+                SQLite::Statement query(db, "SELECT username FROM users WHERE username = ?");
+                query.bind(1, username);
+                if (!query.executeStep()) {
+                    json error = {{"error", "User not found"}, {"status", "error"}};
+                    return crow::response(404, error.dump());
+                }
+
+                // Delete the user
+                SQLite::Statement delete_query(db, "DELETE FROM users WHERE username = ?");
+                delete_query.bind(1, username);
+                delete_query.exec();
+
+                json response = {{"status", "success"}, {"message", "User deleted successfully"}};
+                return crow::response(200, response.dump());
+            }
+
+            // Unsupported method
+            json error = {{"error", "Method not allowed"}, {"status", "error"}};
+            return crow::response(405, error.dump());
+        } catch (const SQLite::Exception& e) {
+            json error = {{"error", "Database error"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(500, error.dump());
+        }
+    });
+
+    // POST endpoint: /api/user/search (protected by JWT, ADMIN only)
+    CROW_ROUTE(app, "/api/user/search").methods(crow::HTTPMethod::POST)
+    ([&db, &app](const crow::request& req) {
+        try {
+            // Check if requester has ADMIN role
+            std::string requester_username = req.get_header_value("X-Username");
+            if (requester_username.empty()) {
+                json error = {{"error", "Unable to retrieve username from token"}, {"status", "error"}};
+                return crow::response(401, error.dump());
+            }
+    
+            SQLite::Statement role_query(db, "SELECT role FROM users WHERE username = ?");
+            role_query.bind(1, requester_username);
+            if (!role_query.executeStep()) {
+                json error = {{"error", "Requester not found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+            std::string requester_role = role_query.getColumn(0).getString();
+            if (requester_role != "ADMIN") {
+                json error = {{"error", "Unauthorized: ADMIN role required"}, {"status", "error"}};
+                return crow::response(403, error.dump());
+            }
+    
+            // Parse and validate request body
+            auto body = json::parse(req.body);
+            if (!body.contains("username") && !body.contains("role") && !body.contains("group")) {
+                json error = {{"error", "At least one search criterion (username, role, or group) must be provided"}, {"status", "error"}};
+                return crow::response(400, error.dump());
+            }
+    
+            // Build dynamic SQL query
+            std::string sql = "SELECT username, email, first_name, last_name, role, group_name FROM users WHERE 1=1";
+            std::vector<std::string> params;
+            if (body.contains("username")) {
+                sql += " AND username LIKE ?";
+                params.push_back("%" + body["username"].get<std::string>() + "%");
+            }
+            if (body.contains("role")) {
+                std::string role = body["role"].get<std::string>();
+                if (role != "ADMIN" && role != "READ" && role != "WRITE") {
+                    json error = {{"error", "Invalid role. Must be ADMIN, READ, or WRITE"}, {"status", "error"}};
+                    return crow::response(400, error.dump());
+                }
+                sql += " AND role = ?";
+                params.push_back(role);
+            }
+            if (body.contains("group")) {
+                sql += " AND group_name = ?";
+                params.push_back(body["group"].get<std::string>());
+            }
+    
+            // Execute query
+            SQLite::Statement query(db, sql);
+            for (size_t i = 0; i < params.size(); ++i) {
+                query.bind(i + 1, params[i]);
+            }
+    
+            // Collect results
+            json users = json::array();
+            while (query.executeStep()) {
+                users.push_back({
+                    {"username", query.getColumn(0).getString()},
+                    {"email", query.getColumn(1).getString()},
+                    {"first_name", query.getColumn(2).getString()},
+                    {"last_name", query.getColumn(3).getString()},
+                    {"role", query.getColumn(4).getString()},
+                    {"group", query.getColumn(5).getString()}
+                });
+            }
+    
+            if (users.empty()) {
+                json error = {{"error", "No users found matching the criteria"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+    
+            json response = {{"status", "success"}, {"data", users}};
+            return crow::response(200, response.dump());
+        } catch (const json::exception& e) {
+            json error = {{"error", "Invalid JSON format"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(400, error.dump());
+        } catch (const SQLite::Exception& e) {
+            json error = {{"error", "Database error"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(500, error.dump());
+        }
+    });
+    
     // Set the port and start the server
     app.port(8080)
        .multithreaded()

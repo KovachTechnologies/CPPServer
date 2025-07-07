@@ -97,6 +97,66 @@ def add_user( token ) :
     else:
         print("No token retrieved, cannot access protected endpoint.")
 
+def get_user( token ) :
+    if token :
+        protected_response = requests.get(
+            f"{BASE_URL}/user/admin1",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+def delete_user( token ) :
+    if token :
+        protected_response = requests.delete(
+            f"{BASE_URL}/user/admin1",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+def search( token ) :
+    if token:
+        payload = {
+            "username":"johndoe",
+        }
+
+        protected_response = requests.post(
+            f"{BASE_URL}/user/search",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+
+        payload = {
+            "role":"ADMIN",
+        }
+
+        protected_response = requests.post(
+            f"{BASE_URL}/user/search",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+
+        payload = {
+            "group":"DEFAULT",
+        }
+
+        protected_response = requests.post(
+            f"{BASE_URL}/user/search",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+
+
 
 if __name__ == "__main__" :
     import argparse
@@ -109,6 +169,9 @@ if __name__ == "__main__" :
     parser.add_argument('-5', '--login-logout',  action='store_true')
     parser.add_argument('-6', '--me',  action='store_true')
     parser.add_argument('-7', '--add-user',  action='store_true')
+    parser.add_argument('-8', '--get-user',  action='store_true')
+    parser.add_argument('-9', '--delete-user',  action='store_true')
+    parser.add_argument('-a', '--search',  action='store_true')
 
     args = parser.parse_args()
 
@@ -138,3 +201,15 @@ if __name__ == "__main__" :
     if args.add_user :
         token = login()
         add_user( token )
+
+    if args.get_user :
+        token = login()
+        get_user( token )
+
+    if args.delete_user :
+        token = login()
+        delete_user( token )
+
+    if args.search :
+        token = login()
+        search( token )
