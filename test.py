@@ -3,11 +3,16 @@ import requests
 # Base URL
 BASE_URL = "http://localhost:8080/api"
 
-# 1. Register
+# Register
 def register() :
     register_payload = {
         "username": "johndoe",
-        "password": "mypassword"
+        "password": "mypassword",
+        "email":"john@example.com",
+        "first_name":"John",
+        "last_name":"Doe",
+        "role":"ADMIN",
+        "group":"DEFAULT"
     }
     register_response = requests.post(
         f"{BASE_URL}/register",
@@ -16,7 +21,7 @@ def register() :
     )
     print("Register Response:", register_response.status_code, register_response.text)
 
-# 2. Login
+# Login
 def login() :
     login_payload = {
         "username": "johndoe",
@@ -38,7 +43,7 @@ def login() :
         token = None
     return token
 
-# 3. Access protected endpoint
+# Access protected endpoint
 def request( token ) :
     if token:
         protected_response = requests.get(
@@ -49,6 +54,50 @@ def request( token ) :
     else:
         print("No token retrieved, cannot access protected endpoint.")
 
+# Logout 
+def logout( token ) :
+    if token:
+        protected_response = requests.post(
+            f"{BASE_URL}/logout",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+# me 
+def me( token ) :
+    if token:
+        protected_response = requests.get(
+            f"{BASE_URL}/users/me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+def add_user( token ) :
+    if token:
+        user_payload = {
+            "username":"admin1",
+            "password":"securepass123",
+            "email":"admin@example.com",
+            "first_name":"Admin",
+            "last_name":"One",
+            "role":"ADMIN",
+            "group":"DEFAULT"
+        }
+
+        protected_response = requests.post(
+            f"{BASE_URL}/user",
+            json=user_payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+
 if __name__ == "__main__" :
     import argparse
 
@@ -57,6 +106,9 @@ if __name__ == "__main__" :
     parser.add_argument('-2', '--login',  action='store_true')
     parser.add_argument('-3', '--request',  action='store_true')
     parser.add_argument('-4', '--request-fail',  action='store_true')
+    parser.add_argument('-5', '--login-logout',  action='store_true')
+    parser.add_argument('-6', '--me',  action='store_true')
+    parser.add_argument('-7', '--add-user',  action='store_true')
 
     args = parser.parse_args()
 
@@ -73,3 +125,16 @@ if __name__ == "__main__" :
     if args.request_fail :
         token = "bad-token" 
         request( token )
+
+    if args.login_logout :
+        token = login()
+        logout( token )
+        request( token )
+
+    if args.me :
+        token = login()
+        me( token )
+
+    if args.add_user :
+        token = login()
+        add_user( token )
