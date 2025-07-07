@@ -1,0 +1,23 @@
+Start testing: Jul 06 23:45 EDT
+----------------------------------------------------------
+1/1 Testing: test_server
+1/1 Test: test_server
+Command: "/usr/bin/python3" "-m" "unittest" "unit_tests.py"
+Directory: /Users/danielkovach/Documents/GitHub/CPPServer
+"test_server" start time: Jul 06 23:45 EDT
+Output:
+----------------------------------------------------------
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 5.936s
+
+OK
+<end of output>
+Test time =   6.09 sec
+----------------------------------------------------------
+Test Passed.
+"test_server" end time: Jul 06 23:45 EDT
+"test_server" time elapsed: 00:00:06
+----------------------------------------------------------
+
+End testing: Jul 06 23:45 EDT

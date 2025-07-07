@@ -26,7 +26,6 @@ target_link_libraries(RestServer PRIVATE
     nlohmann_json::nlohmann_json 
     SQLiteCpp 
     ${SODIUM_LIBRARY_PATH}
-#    sodium 
     jwt-cpp::jwt-cpp
 )
 
@@ -36,3 +35,7 @@ target_link_libraries(RestServer PRIVATE Threads::Threads)
 
 # Set output directory for the executable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+enable_testing()
+
+add_test(test_server python3 -m unittest unit_tests.py)
