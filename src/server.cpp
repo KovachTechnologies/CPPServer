@@ -647,6 +647,94 @@ int main() {
             return crow::response(500, error.dump());
         }
     });
+
+    // GET endpoint: /api/user/roles (protected by JWT, ADMIN only)
+    CROW_ROUTE(app, "/api/roles").methods(crow::HTTPMethod::GET)
+    ([&db, &app](const crow::request& req) {
+        try {
+            // Check if requester has ADMIN role
+            std::string requester_username = req.get_header_value("X-Username");
+            if (requester_username.empty()) {
+                json error = {{"error", "Unable to retrieve username from token"}, {"status", "error"}};
+                return crow::response(401, error.dump());
+            }
+    
+            SQLite::Statement role_query(db, "SELECT role FROM users WHERE username = ?");
+            role_query.bind(1, requester_username);
+            if (!role_query.executeStep()) {
+                json error = {{"error", "Requester not found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+            std::string requester_role = role_query.getColumn(0).getString();
+            if (requester_role != "ADMIN") {
+                json error = {{"error", "Unauthorized: ADMIN role required"}, {"status", "error"}};
+                return crow::response(403, error.dump());
+            }
+    
+            // Query distinct roles
+            SQLite::Statement query(db, "SELECT DISTINCT role FROM users");
+            json roles = json::array();
+            while (query.executeStep()) {
+                roles.push_back(query.getColumn(0).getString());
+            }
+    
+            // Unlikely, but handle empty result
+            if (roles.empty()) {
+                json error = {{"error", "No roles found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+
+            json response = {{"status", "success"}, {"data", roles}};
+            return crow::response(200, response.dump());
+        } catch (const SQLite::Exception& e) {
+            json error = {{"error", "Database error"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(500, error.dump());
+        }
+    });
+
+    // GET endpoint: /api/user/groups (protected by JWT, ADMIN only)
+    CROW_ROUTE(app, "/api/groups").methods(crow::HTTPMethod::GET)
+    ([&db, &app](const crow::request& req) {
+        try {
+            // Check if requester has ADMIN role
+            std::string requester_username = req.get_header_value("X-Username");
+            if (requester_username.empty()) {
+                json error = {{"error", "Unable to retrieve username from token"}, {"status", "error"}};
+                return crow::response(401, error.dump());
+            }
+    
+            SQLite::Statement group_query(db, "SELECT role FROM users WHERE username = ?");
+            group_query.bind(1, requester_username);
+            if (!group_query.executeStep()) {
+                json error = {{"error", "Requester not found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+            std::string requester_group = group_query.getColumn(0).getString();
+            if (requester_group != "ADMIN") {
+                json error = {{"error", "Unauthorized: ADMIN role required"}, {"status", "error"}};
+                return crow::response(403, error.dump());
+            }
+    
+            // Query distinct groups
+            SQLite::Statement query(db, "SELECT DISTINCT group_name FROM users");
+            json groups = json::array();
+            while (query.executeStep()) {
+                groups.push_back(query.getColumn(0).getString());
+            }
+    
+            // Unlikely, but handle empty result
+            if (groups.empty()) {
+                json error = {{"error", "No groups found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+
+            json response = {{"status", "success"}, {"data", groups}};
+            return crow::response(200, response.dump());
+        } catch (const SQLite::Exception& e) {
+            json error = {{"error", "Database error"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(500, error.dump());
+        }
+    });
     
     // Set the port and start the server
     app.port(8080)

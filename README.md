@@ -134,7 +134,7 @@ make
         - username
         - role
 
-- `/user/roles`
+- `/roles`
     - GET
 
 - `/user/group`
@@ -149,7 +149,7 @@ make
     - DELETE
         - groupname
 
-- `/user/groups`
+- `/groups`
     - GET
 
 # Test cases 

@@ -171,6 +171,27 @@ def role( token ) :
     else:
         print("No token retrieved, cannot access protected endpoint.")
 
+def roles( token ) :
+    if token:
+        protected_response = requests.get(
+            f"{BASE_URL}/roles",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+def groups( token ) :
+    if token:
+        protected_response = requests.get(
+            f"{BASE_URL}/groups",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
+
+
 
 if __name__ == "__main__" :
     import argparse
@@ -187,6 +208,8 @@ if __name__ == "__main__" :
     parser.add_argument('-9', '--delete-user',  action='store_true')
     parser.add_argument('-a', '--search',  action='store_true')
     parser.add_argument('-b', '--role',  action='store_true')
+    parser.add_argument('-c', '--roles',  action='store_true')
+    parser.add_argument('-d', '--groups',  action='store_true')
 
     args = parser.parse_args()
 
@@ -233,3 +256,11 @@ if __name__ == "__main__" :
         token = login()
         add_user( token )
         role( token )
+
+    if args.roles :
+        token = login()
+        roles( token )
+
+    if args.groups :
+        token = login()
+        groups( token )
