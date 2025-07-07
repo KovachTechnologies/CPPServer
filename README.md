@@ -134,10 +134,6 @@ make
         - username
         - role
 
-- `/role/{name}`
-    - GET
-        - username
-
 - `/user/roles`
     - GET
 

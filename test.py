@@ -155,7 +155,21 @@ def search( token ) :
     else:
         print("No token retrieved, cannot access protected endpoint.")
 
+def role( token ) :
+    if token:
+        payload = {
+            "username":"admin1",
+            "role" : "READ"
+        }
 
+        protected_response = requests.post(
+            f"{BASE_URL}/user/role",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        print("Protected Response:", protected_response.status_code, protected_response.text)
+    else:
+        print("No token retrieved, cannot access protected endpoint.")
 
 
 if __name__ == "__main__" :
@@ -172,6 +186,7 @@ if __name__ == "__main__" :
     parser.add_argument('-8', '--get-user',  action='store_true')
     parser.add_argument('-9', '--delete-user',  action='store_true')
     parser.add_argument('-a', '--search',  action='store_true')
+    parser.add_argument('-b', '--role',  action='store_true')
 
     args = parser.parse_args()
 
@@ -213,3 +228,8 @@ if __name__ == "__main__" :
     if args.search :
         token = login()
         search( token )
+
+    if args.role :
+        token = login()
+        add_user( token )
+        role( token )

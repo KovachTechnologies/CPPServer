@@ -583,6 +583,70 @@ int main() {
             return crow::response(500, error.dump());
         }
     });
+
+    // POST endpoint: /api/user/role (protected by JWT, ADMIN only)
+    CROW_ROUTE(app, "/api/user/role").methods(crow::HTTPMethod::POST)
+    ([&db, &app](const crow::request& req) {
+        try {
+            // Check if requester has ADMIN role
+            std::string requester_username = req.get_header_value("X-Username");
+            if (requester_username.empty()) {
+                json error = {{"error", "Unable to retrieve username from token"}, {"status", "error"}};
+                return crow::response(401, error.dump());
+            }
+    
+            SQLite::Statement role_query(db, "SELECT role FROM users WHERE username = ?");
+            role_query.bind(1, requester_username);
+            if (!role_query.executeStep()) {
+                json error = {{"error", "Requester not found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+            std::string requester_role = role_query.getColumn(0).getString();
+            if (requester_role != "ADMIN") {
+                json error = {{"error", "Unauthorized: ADMIN role required"}, {"status", "error"}};
+                return crow::response(403, error.dump());
+            }
+    
+            // Parse and validate request body
+            auto body = json::parse(req.body);
+            if (!body.contains("username") || !body.contains("role")) {
+                json error = {{"error", "Missing required fields: username, role"}, {"status", "error"}};
+                return crow::response(400, error.dump());
+            }
+    
+            std::string username = body["username"].get<std::string>();
+            std::string role = body["role"].get<std::string>();
+    
+            // Validate role
+            if (role != "ADMIN" && role != "READ" && role != "WRITE") {
+                json error = {{"error", "Invalid role. Must be ADMIN, READ, or WRITE"}, {"status", "error"}};
+                return crow::response(400, error.dump());
+            }
+    
+            // Check if target user exists
+            SQLite::Statement query(db, "SELECT username FROM users WHERE username = ?");
+            query.bind(1, username);
+            if (!query.executeStep()) {
+                json error = {{"error", "User not found"}, {"status", "error"}};
+                return crow::response(404, error.dump());
+            }
+    
+            // Update user's role
+            SQLite::Statement update(db, "UPDATE users SET role = ? WHERE username = ?");
+            update.bind(1, role);
+            update.bind(2, username);
+            update.exec();
+    
+            json response = {{"status", "success"}, {"message", "User role updated successfully"}};
+            return crow::response(200, response.dump());
+        } catch (const json::exception& e) {
+            json error = {{"error", "Invalid JSON format"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(400, error.dump());
+        } catch (const SQLite::Exception& e) {
+            json error = {{"error", "Database error"}, {"details", e.what()}, {"status", "error"}};
+            return crow::response(500, error.dump());
+        }
+    });
     
     // Set the port and start the server
     app.port(8080)
